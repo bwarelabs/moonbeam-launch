@@ -1,0 +1,179 @@
+groups:
+- name: moonbeam.rules
+  rules:
+
+  ##############################################################################
+  # Relay/Parachain RPC unavailable
+  ##############################################################################
+
+  - alert: UnavailableRPCRelayOrParachain
+    expr: up{instance="localhost:9933",job="blackbox"} == 0 or up{instance="localhost:9934",job="blackbox"} == 0
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      message: 'HTTP RPC for {{ $labels.job }} has been unavailable for 10m on instance {{ $labels.instance }}'
+
+  ##############################################################################
+  # Relay/Parachain RPC slow response
+  ##############################################################################
+
+  - alert: RPCSlowProbe
+    expr: avg_over_time(probe_duration_seconds{job="blackbox"}[1m]) > 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      message: 'HTTP probe for {{ $labels.job }} on {{ $labels.instance }} has been slower than 1s for more than 5m.'
+
+  ##############################################################################
+  # Relay/Parachain down
+  ##############################################################################
+
+  - alert: RelayServiceDown
+    expr: up{instance="localhost:9615",job="relay"} == 0
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      message: 'The relay instance {{ $labels.instance }} has been down for 10m.'
+
+  - alert: ParachainServiceDown
+    expr: up{instance="localhost:9616",job="parachain"} == 0
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      message: 'The parachain instance {{ $labels.instance }} has been down for 10m.'
+
+  ##############################################################################
+  # Relay Transaction pool
+  ##############################################################################
+
+  - alert: RelayTxPoolSize
+    expr: increase(substrate_sub_txpool_validations_finished{instance="localhost:9615",job="relay"}[5m]) < 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      message: 'Less than one tx was validated on relay instance {{ $labels.instance }} for the past 5m.'
+
+  - alert: RelayTxPoolSize
+    expr: increase(substrate_sub_txpool_validations_finished{instance="localhost:9615",job="relay"}[5m]) < 1
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      message: 'Less than one tx was validated on relay instance {{ $labels.instance }} for the past 15m.'
+
+  ##############################################################################
+  # Relay Block finalization
+  ##############################################################################
+
+  - alert: RelaySyncStuck
+    expr: increase(substrate_block_height{instance="localhost:9615",job="relay",status="finalized"}[1m]) < 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      message: 'Less than one new block per minute on relay instance {{ $labels.instance }} for the past 5m.'
+
+  - alert: RelaySyncStuck
+    expr: increase(substrate_block_height{instance="localhost:9615",job="relay",status="finalized"}[1m]) < 1
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      message: 'Less than one new block per minute on relay instance {{ $labels.instance }} for the past 15m.'
+
+  - alert: RelaySyncBehindHead
+    expr: (substrate_block_height{instance="localhost:9615",job="relay",status="sync_target"} - substrate_block_height{instance="localhost:9615",job="relay",status="finalized"}) > 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      message: 'Behind with more than 10 blocks on relay instance {{ $labels.instance }} for the past 5m.'
+
+  - alert: RelaySyncBehindHead
+    expr: (substrate_block_height{instance="localhost:9615",job="relay",status="sync_target"} - substrate_block_height{instance="localhost:9615",job="relay",status="finalized"}) > 10
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      message: 'Behind with more than 10 blocks on relay instance {{ $labels.instance }} for the past 15m.'
+
+  ##############################################################################
+  # Relay Networking
+  ##############################################################################
+
+  - alert: RelayFewPeers
+    expr: substrate_sync_peers{instance="localhost:9615",job="relay"} < 3
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      message: 'The relay instance {{ $labels.instance }} has less than 3 peers for more than 10 minutes'
+  
+  - alert: RelayFewPeers
+    expr: substrate_sync_peers{instance="localhost:9615",job="relay"} < 3
+    for: 30m
+    labels:
+      severity: critical
+    annotations:
+      message: 'The relay instance {{ $labels.instance }} has less than 3 peers for more than 30 minutes'
+
+  ##############################################################################
+  # Parachain Block finalization
+  ##############################################################################
+
+  - alert: ParachainSyncStuck
+    expr: increase(polkadot_block_height{instance="localhost:9616",job="parachain",status="finalized"}[1m]) < 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      message: 'Less than one new block per minute on parachain instance {{ $labels.instance }} for the past 5m.'
+
+  - alert: ParachainSyncStuck
+    expr: increase(polkadot_block_height{instance="localhost:9616",job="parachain",status="finalized"}[1m]) < 1
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      message: 'Less than one new block per minute on parachain instance {{ $labels.instance }} for the past 15m.'
+
+  - alert: ParachainSyncBehindHead
+    expr: (polkadot_block_height{instance="localhost:9616",job="parachain",status="sync_target"} - polkadot_block_height{instance="localhost:9616",job="parachain",status="finalized"}) > 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      message: 'Behind with more than 10 blocks on parachain instance {{ $labels.instance }} for the past 5m.'
+
+  - alert: ParachainSyncBehindHead
+    expr: (polkadot_block_height{instance="localhost:9616",job="parachain",status="sync_target"} - polkadot_block_height{instance="localhost:9616",job="parachain",status="finalized"}) > 10    
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      message: 'Behind with more than 10 blocks on parachain instance {{ $labels.instance }} for the past 15m.'
+
+  ##############################################################################
+  # Parachain Networking
+  ##############################################################################
+
+  - alert: ParachainFewPeers
+    expr: polkadot_sync_peers{instance="localhost:9616",job="parachain"} < 3
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      message: 'The parachain instance {{ $labels.instance }} has less than 3 peers for more than 10 minutes'
+
+  - alert: ParachainFewPeers
+    expr: polkadot_sync_peers{instance="localhost:9616",job="parachain"} < 3
+    for: 30m
+    labels:
+      severity: critical
+    annotations:
+      message: 'The parachain instance {{ $labels.instance }} has less than 3 peers for more than 30 minutes'

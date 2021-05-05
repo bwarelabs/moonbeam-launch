@@ -1,0 +1,44 @@
+global:
+  slack_api_url: 'INSERT_FROM_ENV_FILE'
+
+route:
+  group_by: ['alertname', 'job']
+  repeat_interval: 1h
+  group_wait: 30s
+  group_interval: 5m
+  receiver: slack-warning
+  routes:
+    - match:
+        severity: warning
+      receiver: 'slack-warning'
+    - match:
+        severity: critical
+      receiver: 'slack-critical'
+
+receivers:
+  - name: 'slack-warning'
+    slack_configs:
+      - channel: '#alerts-moonbeam'
+        username: 'Warning Alert'
+        icon_emoji: ':warning:'
+        text: >-
+          {{ range .Alerts -}}
+          *Timestamp:* {{ .StartsAt }}
+          *Description:* {{ .Annotations.message }}
+          *Details:*
+            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+            {{ end }}
+          {{ end }}
+  - name: 'slack-critical'
+    slack_configs:
+      - channel: '#alerts-moonbeam'
+        username: 'Critical Alert'
+        icon_emoji: ':octagonal_sign:'
+        text: >-
+          {{ range .Alerts -}}
+          *Timestamp:* {{ .StartsAt }}
+          *Description:* {{ .Annotations.message }}
+          *Details:*
+            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+            {{ end }}
+          {{ end }}

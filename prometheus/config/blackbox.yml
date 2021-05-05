@@ -1,0 +1,11 @@
+modules:
+  http_rpc:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2"]
+      method: GET
+      fail_if_ssl: true
+      fail_if_not_ssl: false
+      tls_config:
+        insecure_skip_verify: true
