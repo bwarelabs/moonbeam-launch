@@ -23,23 +23,23 @@ done
 
 source .env
 
-adduser moonbase_service --system --no-create-home
+adduser moonriver_service --system --no-create-home
 if [ -d ${HOME_DIR} ]; then #for purging only
 	rm -rf ${HOME_DIR}
 fi
 mkdir ${HOME_DIR}
-chown moonbase_service ${HOME_DIR}
+chown moonriver_service ${HOME_DIR}
 
-sudo bash utils/build_moonbeam.sh && \
+sudo bash utils/build_moonriver.sh && \
 sudo bash utils/setup_firewall.sh || \
-{ echo "Installing moonbeam dependencies failed"; exit 1; }
+{ echo "Installing moonriver dependencies failed"; exit 1; }
 
-sudo bash utils/config_moonbeam_service.sh
+sudo bash utils/config_moonriver_service.sh
 
 sudo systemctl daemon-reload
 
-sudo systemctl enable moonbeam.service
-sudo systemctl restart moonbeam.service
+sudo systemctl enable moonriver.service
+sudo systemctl restart moonriver.service
 
 if [ $configure_gantree = "yes" ]; then
 	sudo bash utils/prepare_gantree_config.sh && \

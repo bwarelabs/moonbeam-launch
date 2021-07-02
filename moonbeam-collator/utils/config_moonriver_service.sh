@@ -2,9 +2,9 @@
 
 source .env
 
-cat > /etc/systemd/system/moonbeam.service <<EOF
+cat > /etc/systemd/system/moonriver.service <<EOF
 [Unit]
-Description="Moonbase Alpha systemd service"
+Description="Moonriver systemd service"
 After=network.target
 StartLimitIntervalSec=0
 
@@ -12,23 +12,21 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=on-failure
 RestartSec=10
-User=moonbase_service
-SyslogIdentifier=moonbase
+User=moonriver_service
+SyslogIdentifier=moonriver
 SyslogFacility=local7
 KillSignal=SIGHUP
 ExecStart=${HOME_DIR}/moonbeam \
-     --parachain-id ${PARACHAIN_ID} \
-     --collator \
-     --author-id ${PUBLIC_KEY} \
+     --validator \
      --port 30333 \
      --rpc-port 9933 \
      --ws-port 9944 \
      --pruning=archive \
+     --state-cache-size 1 \
      --unsafe-rpc-external \
      --unsafe-ws-external \
      --rpc-methods=Safe \
      --rpc-cors all \
-     --log rpc=info \
      --base-path ${HOME_DIR} \
      --chain ${CHAIN_NAME} \
      --name ${NODE_NAME} \
